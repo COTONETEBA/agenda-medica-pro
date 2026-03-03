@@ -1,4 +1,8 @@
-require("dotenv").config();
+﻿require("dotenv").config();
+
+const fs = require("fs");
+const path = require("path");
+
 
 const express = require("express");
 const cors = require("cors");
@@ -20,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // ==========================
-// CONEXÃO POSTGRES (Render)
+// CONEXÃƒO POSTGRES (Render)
 // ==========================
 
 const pool = new Pool({
@@ -31,7 +35,7 @@ const pool = new Pool({
 });
 
 // ==========================
-// CRIAR TABELAS AUTOMÁTICO
+// CRIAR TABELAS AUTOMÃTICO
 // ==========================
 
 async function criarTabelas() {
@@ -67,8 +71,13 @@ criarTabelas();
 // UPLOAD
 // ==========================
 
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
-    destination: "uploads/",
+    destination: uploadsDir,
     filename: (req, file, cb) => {
         cb(null, Date.now() + "-" + file.originalname);
     }
@@ -99,7 +108,7 @@ function gerarLinkWhatsApp(numero, mensagem) {
 // ROTAS
 // ==========================
 
-// Cadastro usuário
+// Cadastro usuÃ¡rio
 app.post("/register", async (req, res) => {
     try {
         const { nome, email, senha, tipo } = req.body;
@@ -111,10 +120,10 @@ app.post("/register", async (req, res) => {
             [nome, email, hash, tipo]
         );
 
-        res.json({ mensagem: "Usuário criado" });
+        res.json({ mensagem: "UsuÃ¡rio criado" });
 
     } catch (err) {
-        res.status(500).json({ erro: "Erro ao criar usuário" });
+        res.status(500).json({ erro: "Erro ao criar usuÃ¡rio" });
     }
 });
 
@@ -129,14 +138,14 @@ app.post("/login", async (req, res) => {
         );
 
         if (result.rows.length === 0)
-            return res.status(400).json({ erro: "Usuário não encontrado" });
+            return res.status(400).json({ erro: "UsuÃ¡rio nÃ£o encontrado" });
 
         const usuario = result.rows[0];
 
         const senhaValida = await bcrypt.compare(senha, usuario.senha);
 
         if (!senhaValida)
-            return res.status(400).json({ erro: "Senha inválida" });
+            return res.status(400).json({ erro: "Senha invÃ¡lida" });
 
         const token = jwt.sign(
             { id: usuario.id, tipo: usuario.tipo },
@@ -155,7 +164,7 @@ app.post("/login", async (req, res) => {
 app.post("/consulta", verificarToken, async (req, res) => {
     try {
         if (req.usuario.tipo !== "gestor")
-            return res.status(403).json({ erro: "Sem permissão" });
+            return res.status(403).json({ erro: "Sem permissÃ£o" });
 
         const { paciente, data, hora } = req.body;
 
@@ -183,7 +192,7 @@ app.get("/consultas", verificarToken, async (req, res) => {
     }
 });
 
-// Gerar lembrete para múltiplos números
+// Gerar lembrete para mÃºltiplos nÃºmeros
 app.get("/gerar-lembrete/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -194,12 +203,12 @@ app.get("/gerar-lembrete/:id", verificarToken, async (req, res) => {
         );
 
         if (result.rows.length === 0)
-            return res.status(404).json({ erro: "Consulta não encontrada" });
+            return res.status(404).json({ erro: "Consulta nÃ£o encontrada" });
 
         const c = result.rows[0];
 
         const mensagem = 
-`Lembrete de consulta médica
+`Lembrete de consulta mÃ©dica
 
 Paciente: ${c.paciente}
 Data: ${c.data}
@@ -222,7 +231,7 @@ app.post("/upload", verificarToken, upload.single("receita"), (req, res) => {
 });
 
 // ==========================
-// PORTA (Render usa dinâmica)
+// PORTA (Render usa dinÃ¢mica)
 // ==========================
 
 const PORT = process.env.PORT || 3000;
@@ -231,7 +240,7 @@ const PORT = process.env.PORT || 3000;
 app.get("/", (req, res) => {
     res.json({
         status: "ok",
-        mensagem: "Agenda Médica API está online 🚀"
+        mensagem: "Agenda MÃ©dica API estÃ¡ online ðŸš€"
     });
 });
 
