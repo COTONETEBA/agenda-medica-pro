@@ -227,6 +227,14 @@ app.post("/upload", verificarToken, upload.single("receita"), (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
+// Rota raiz para teste no Render
+app.get("/", (req, res) => {
+    res.json({
+        status: "ok",
+        mensagem: "Agenda Médica API está online 🚀"
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
